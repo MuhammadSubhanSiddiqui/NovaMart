@@ -1,0 +1,39 @@
+Combined non-SQL code bundle for part-5
+Generated: 2026-06-01 13:39:54
+
+============================================================
+FILE: run_part5_modular.py
+============================================================
+import argparse
+import subprocess
+from pathlib import Path
+
+
+def run_sql_file(psql_cmd: str, sql_file: Path) -> None:
+    subprocess.run([psql_cmd, "-f", str(sql_file)], check=True)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Run Part 5 modular remediation scripts")
+    parser.add_argument("--psql", default="psql", help="Path to psql executable")
+    args = parser.parse_args()
+
+    base_dir = Path(__file__).resolve().parent
+    scripts = [
+        "01_product_search_remediation.sql",
+        "02_inventory_partitioning.sql",
+        "03_order_history_indexes.sql",
+        "04_observability.sql",
+        "05_validation.sql",
+    ]
+
+    for script in scripts:
+        run_sql_file(args.psql, base_dir / script)
+
+    print("Part 5 modular remediation completed successfully.")
+
+
+if __name__ == "__main__":
+    main()
+
+
