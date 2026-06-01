@@ -1,9 +1,8 @@
-Combined code bundle for part-5
-Generated: 2026-06-01 13:33:42
+-- Combined SQL bundle for part-5
 
-============================================================
-FILE: 00_run_all.sql
-============================================================
+-- ============================================================
+-- FILE: 00_run_all.sql
+-- ============================================================
 \set ON_ERROR_STOP on
 
 \i 01_product_search_remediation.sql
@@ -11,10 +10,9 @@ FILE: 00_run_all.sql
 \i 03_order_history_indexes.sql
 \i 04_observability.sql
 
-
-============================================================
-FILE: 01_product_search_remediation.sql
-============================================================
+-- ============================================================
+-- FILE: 01_product_search_remediation.sql
+-- ============================================================
 -- Part 5.1: Product search load remediation for PostgreSQL 16
 -- Goal: lower planner cost, avoid disk-spilling hash joins, and stop recomputing ratings on every search.
 
@@ -56,10 +54,9 @@ ANALYZE public.products;
 ANALYZE public.reviews;
 ANALYZE public.mv_product_ratings;
 
-
-============================================================
-FILE: 02_inventory_partitioning.sql
-============================================================
+-- ============================================================
+-- FILE: 02_inventory_partitioning.sql
+-- ============================================================
 -- Part 5.2: Inventory availability remediation for PostgreSQL 16
 -- Goal: replace UNION ALL store views with native list partitioning so the planner can prune 133 partitions.
 
@@ -136,10 +133,9 @@ ANALYZE public.inventory;
 
 DROP TABLE IF EXISTS public.inventory_legacy;
 
-
-============================================================
-FILE: 03_order_history_indexes.sql
-============================================================
+-- ============================================================
+-- FILE: 03_order_history_indexes.sql
+-- ============================================================
 -- Part 5.3: Order history remediation for PostgreSQL 16
 -- Goal: turn correlated subquery lookups into index probes instead of repeated full-table scans.
 
@@ -154,10 +150,9 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_orderitems_order_id
 ANALYZE public.orders;
 ANALYZE public.orderitems;
 
-
-============================================================
-FILE: 04_observability.sql
-============================================================
+-- ============================================================
+-- FILE: 04_observability.sql
+-- ============================================================
 -- Part 5.4: Slow query observability for PostgreSQL 16
 -- Goal: normalize query fingerprints so the hottest shapes can be measured and reported consistently.
 
@@ -173,10 +168,9 @@ FROM pg_stat_statements
 ORDER BY total_exec_time DESC
 LIMIT 20;
 
-
-============================================================
-FILE: 05_validation.sql
-============================================================
+-- ============================================================
+-- FILE: 05_validation.sql
+-- ============================================================
 -- Validation queries for the Part 5 remediation pack.
 
 SET search_path = public, pg_catalog;
@@ -238,67 +232,3 @@ SELECT
         FROM pg_extension
         WHERE extname = 'pg_stat_statements'
     ) AS pg_stat_statements_enabled;
-
-
-============================================================
-FILE: modular_remediation.sql
-============================================================
-\echo 'Part 5 modular remediation started'
-\set ON_ERROR_STOP on
-
--- Module 1: Product search performance remediation
-\i 01_product_search_remediation.sql
-
--- Module 2: Inventory partitioning remediation
-\i 02_inventory_partitioning.sql
-
--- Module 3: Order history index remediation
-\i 03_order_history_indexes.sql
-
--- Module 4: Observability setup
-\i 04_observability.sql
-
--- Module 5: Validation checks
-\i 05_validation.sql
-
-\echo 'Part 5 modular remediation completed'
-
-
-
-============================================================
-FILE: run_part5_modular.py
-============================================================
-import argparse
-import subprocess
-from pathlib import Path
-
-
-def run_sql_file(psql_cmd: str, sql_file: Path) -> None:
-    subprocess.run([psql_cmd, "-f", str(sql_file)], check=True)
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Run Part 5 modular remediation scripts")
-    parser.add_argument("--psql", default="psql", help="Path to psql executable")
-    args = parser.parse_args()
-
-    base_dir = Path(__file__).resolve().parent
-    scripts = [
-        "01_product_search_remediation.sql",
-        "02_inventory_partitioning.sql",
-        "03_order_history_indexes.sql",
-        "04_observability.sql",
-        "05_validation.sql",
-    ]
-
-    for script in scripts:
-        run_sql_file(args.psql, base_dir / script)
-
-    print("Part 5 modular remediation completed successfully.")
-
-
-if __name__ == "__main__":
-    main()
-
-
-

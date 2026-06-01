@@ -1,5 +1,4 @@
 -- Combined SQL bundle for part-12
--- Generated: 2026-06-01 13:39:54
 
 -- ============================================================
 -- FILE: modular_remediation.sql
